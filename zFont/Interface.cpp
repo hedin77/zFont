@@ -72,3 +72,10 @@ uint RTDynamicCast_MT = (uint)__RTDynamicCast;
 #define ENGINE Engine_G2A
 #include "Sources.h"
 #endif
+
+extern "C" __declspec(dllexport)
+float UpdatezFontDynamicFontMultiplier(float multiplier) {
+    float DynamicFontScale_old = GOTHIC_ENGINE::DynamicFontScale;
+    GOTHIC_ENGINE::DynamicFontScale = multiplier;
+    return DynamicFontScale_old;
+}

@@ -1,0 +1,3 @@
+LIBRARY zFont
+EXPORTS
+    UpdatezFontDynamicFontMultiplier @1

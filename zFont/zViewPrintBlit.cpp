@@ -15,8 +15,9 @@ namespace GOTHIC_ENGINE {
     int viewWidth = rside.X - lside.X - 14;
 
     Array<zSTRING> lines = ViewSplitLines( text, viewWidth, ttf );
-    for( int i = 0; i < lines.GetNum(); i++ )
-      PrintLine( lines[i] );
+    for (int i = 0; i < lines.GetNum(); i++) {
+        PrintLine(lines[i]);
+    }
   }
 
 

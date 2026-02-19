@@ -10,11 +10,11 @@ namespace GOTHIC_ENGINE {
 
   bool CustomDirectDraw = false;
   float FontScale = 1.0;
-  bool DrawShadow = true;
+  bool DrawShadow = false;
   bool DrawHighlight = true;
   string DefaultSystemFont = "timesbd.ttf";
   int StaticEncoding = 0;
-
+  extern float DynamicFontScale = 1.0;
 
   struct Glyph;
   struct Letter;
@@ -98,6 +98,7 @@ namespace GOTHIC_ENGINE {
     Map<char32_t, Letter*> Letters;
     Letter* GetLetter( char32_t id );
     double GetLetterWidth( char32_t id );
+    double GetTextWidth(const zSTRING& text);
     FontMap* GetMap( int requiredWidth, int requiredHeight );
     void Free();
     void PrepareLettersForText( std::u32string unicode );

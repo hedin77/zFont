@@ -9,11 +9,50 @@ namespace GOTHIC_ENGINE {
     string ddrawFileName = buffer;
     CustomDirectDraw = ddrawFileName.StartWith( Union.GetGameDirectory() );
 
+    initHook();
+    
+    string temp;
     Union.GetSysPackOption().Read( FontScale, "Font", "Scale", FontScale );
     Union.GetSysPackOption().Read( DrawShadow, "Font", "DrawShadow", DrawShadow );
     Union.GetSysPackOption().Read( DrawHighlight, "Font", "DrawHighlight", DrawHighlight );
     Union.GetSysPackOption().Read( DefaultSystemFont, "Font", "DefaultSystemFont", DefaultSystemFont );
     Union.GetSysPackOption().Read( StaticEncoding, "Font", "StaticEncoding", StaticEncoding );
+    Union.GetSysPackOption().Read(temp, "Font", "FONT_DEFAULT.TGA", "1.0, 205, 186, 156");
+    Union.GetSysPackOption().Read(temp, "Font", "FONT_OLD_10_WHITE.TGA", "1.0, 205, 186, 156");
+    Union.GetSysPackOption().Read(temp, "Font", "FONT_OLD_10_WHITE_HI.TGA", "1.0, 255, 255, 255");
+    Union.GetSysPackOption().Read(temp, "Font", "FONT_OLD_20_WHITE.TGA", "1.0, 255, 222, 172");
+    Union.GetSysPackOption().Read(temp, "Font", "FONT_OLD_20_WHITE_HI.TGA", "1.0, 255, 255, 255");
+    Union.GetSysPackOption().Read(temp, "Font", "FONT_10_BOOK.TGA", "1.0, 15, 15, 15");
+    Union.GetSysPackOption().Read(temp, "Font", "FONT_10_BOOK_HI.TGA", "1.0, 30, 30, 30");
+    Union.GetSysPackOption().Read(temp, "Font", "FONT_15_BOOK.TGA", "1.0, 15, 15, 15");
+    Union.GetSysPackOption().Read(temp, "Font", "FONT_15_BOOK_HI.TGA", "1.0, 30, 30, 30");
+    Union.GetSysPackOption().Read(temp, "Font", "FONT_20_BOOK.TGA", "1.0, 77, 77, 255");
+    Union.GetSysPackOption().Read(temp, "Font", "FONT_20_BOOK_HI.TGA", "1.0, 51, 204, 204");
+    Union.GetSysPackOption().Read(temp, "Font", "FONT_OLD_10_WHITE_HO.TGA", "1.0, 255, 255, 255");
+    Union.GetSysPackOption().Read(temp, "Font", "FONT_OLD_20_MENU.TGA", "1.0, 205, 186, 156");
+    Union.GetSysPackOption().Read(temp, "Font", "FONT_OLD_20_MENU_HI.TGA", "1.0, 255, 255, 255");
+    Union.GetSysPackOption().Read(temp, "Font", "FONT_SYMDICE.TGA", "1.0, 255, 100, 0");
+    Union.GetSysPackOption().Read(temp, "Font", "FONT_SYMBOLS.TGA", "1.0, 204, 242, 255");
+    Union.GetSysPackOption().Read(temp, "Font", "FONT_POISON.TGA", "1.0, 255, 102, 0");
+    Union.GetSysPackOption().Read(temp, "Font", "FONT_STAMINA.TGA", "1.0, 255, 0, 0");
+
+
+    int count = Union.GetSysPackOption().lstBlocks.GetNumInList();
+    for (int i = count - 1; i >= 0; i--) {
+        COption::OptBlock* block = Union.GetSysPackOption().lstBlocks.GetAt(i)->GetData(); 
+        if (block && block->sBlockName.CompareI("FONT")) {
+            int sizeValues = block->lstValues.GetNumInList();
+            for (int j = sizeValues - 1; j >= 0; j--) {
+                COption::OptBlock::OptValue* optValue = block->lstValues.GetAt(j)->GetData();
+                if (optValue && optValue->sValueName.StartWith("FONT_")) {
+                    Array<CStringA> params = optValue->sValue.Split(",");
+                    FontsCustomMultiplier.Insert(A optValue->sValueName, params.GetSafe(0)->ToReal32());
+                    FontsColors.Insert(A optValue->sValueName, optValue->sValue);
+                }
+            }
+        }
+    }
+
     if( StaticEncoding != 65001 && StaticEncoding < 1250 && StaticEncoding > 1258 )
       StaticEncoding = 0;
   }

@@ -5,10 +5,10 @@ namespace GOTHIC_ENGINE {
   HOOK Hook_zCFont_GetFontY PATCH( &zCFont::GetFontY, &zCFont::GetFontY_Union );
 
   int zCFont::GetFontY_Union() {
-    int value = THISCALL( Hook_zCFont_GetFontY )();
-    return value * FontScale;
+    int value = THISCALL( Hook_zCFont_GetFontY )() * DynamicFontScale * FontScale;
+    auto& pair = FontsCustomMultiplier[this->name];
+    return !pair.IsNull() ? value * pair.GetValue() : value;
   }
-
 
   HOOK Hook_zCFont_GetFontX PATCH( &zCFont::GetFontX, &zCFont::GetFontX_Union );
 
@@ -41,7 +41,7 @@ namespace GOTHIC_ENGINE {
       Font* ttf = Font::GetFont( font );
       if( ttf )
         return any( ttf->FontProto->SizePx );
-    }
+      }
     return THISCALL( Hook_zCView_FontY )();
   }
 
@@ -51,6 +51,6 @@ namespace GOTHIC_ENGINE {
   int zCView::FontSize_Union( zSTRING& line ) {
     if( font )
       return anx( font->GetFontX_Union( line ) );
-    return 0;
+      return 0;
   }
 }

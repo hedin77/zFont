@@ -7,10 +7,12 @@ namespace GOTHIC_ENGINE {
   }
 
 
-  void Letter::GetScreenPositions( int x, int y, zVEC2& start, zVEC2& end ) {
-    start[0] = x + Glyph->OffsetX;
-    start[1] = y + Glyph->OffsetY + Map->OwnedFont->FontProto->Ascender;
-    end[0] = start[0] + Width;
-    end[1] = start[1] + Height;
+  void Letter::GetScreenPositions(int x, int y, zVEC2& start, zVEC2& end) {
+      FontGeneric* font = Map->OwnedFont->FontProto;
+      double verticalOffset = font->CapHeight - Glyph->OffsetY;
+      start[0] = x + Glyph->OffsetX;
+      start[1] = y + verticalOffset;
+      end[0] = start[0] + Width;
+      end[1] = start[1] + Height;
   }
 }

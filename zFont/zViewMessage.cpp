@@ -53,31 +53,39 @@ namespace GOTHIC_ENGINE {
 
   HOOK Hook_zCView_PrintMessageCXY PATCH( &zCView::PrintMessageCXY, &zCView::PrintMessageCXY_Union );
 
-  void zCView::PrintMessageCXY_Union( const zSTRING& npcName, const zSTRING& text, float time, zCOLOR& color ) {
-    Font* ttf = Font::GetFont( font );
-    if( !ttf )
-      return;
+  void zCView::PrintMessageCXY_Union(const zSTRING& npcName, const zSTRING& text, float time, zCOLOR& color) {
+      Font* ttf = Font::GetFont(font);
+      if (!ttf)
+          return;
 
-    ClrPrintwin();
-    int viewWidthPx = nax( px2 - px1 );
-    int viewHeightVt = py2 - py1;
-    int fontYVt = FontY();
+      ClrPrintwin();
+      int viewWidthPx = nax(px2 - px1);
+      int viewHeightVt = py2 - py1;
+      int fontYVt = FontY();
 
-    Array<zSTRING> lines = ViewSplitLines( text, viewWidthPx, ttf );
-    int textHeightVt = lines.GetNum() * fontYVt;
-    if( !npcName.IsEmpty() )
-      textHeightVt += fontYVt;
+      Array<zSTRING> lines = ViewSplitLines(text, viewWidthPx, ttf);
+      int textHeightVt = lines.GetNum() * fontYVt;
+      if (!npcName.IsEmpty())
+          textHeightVt += fontYVt;
 
-    int padding = (viewHeightVt - textHeightVt) / -2 - (fontYVt / 2);
+      int maxlines = viewHeightVt / fontYVt;
+      int nLines = lines.GetNum() + (npcName.IsEmpty() ? 0 : 1);
 
-    if( !npcName.IsEmpty() ) {
-      zCOLOR npcNameColor = GFX_WHITE;
-      Nextline( npcName, time, &npcNameColor, &padding );
-    }
+      float fPadding = (nLines - maxlines) / 2.0f;
+      fPadding *= fontYVt;
+      fPadding -= (fontYVt / 2.0f);
+      int padding = (int)fPadding;
 
-    for( int i = 0; i < lines.GetNum(); i++ ) {
-      lines[i].TrimLeft( ' ' );
-      Nextline( lines[i], 0.0f, &color, &padding );
-    }
+      if (!npcName.IsEmpty()) {
+          zCOLOR npcNameColor = GFX_WHITE;
+          Nextline(npcName, time, &npcNameColor, &padding);
+      }
+
+      //cmd << "text:" + Z text << endl;
+      for (int i = 0; i < lines.GetNum(); i++) {
+          lines[i].TrimLeft(' ');
+          //cmd << "i: " << i << ", lines[i]: " << Z lines[i] << endl; 
+          Nextline(lines[i], 0.0f, &color, &padding);
+      }
   }
 }

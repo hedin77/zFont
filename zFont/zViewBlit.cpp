@@ -23,26 +23,61 @@ namespace GOTHIC_ENGINE {
     }
   }
 
+  HMODULE adapterHandleDLL;
 
-  HOOK Hook_zCView_Print PATCH( &zCView::Print, &zCView::Print_Union );
+  struct Registers {
+      DWORD eax;
+      DWORD ecx;
+      DWORD edx;
+      DWORD ebx;
+      DWORD esp;
+      DWORD ebp;
+      DWORD esi;
+      DWORD edi;
+      DWORD eip;
+  };
+    
 
-  void zCView::Print_Union( int x, int y, const zSTRING& line ) {
-    if( !font )
-      return;
+  void __fastcall partialHookzViewPrint(Registers& reg) {
+      zCView* view = reinterpret_cast<zCView*>(reg.ecx);
 
-    scrollTimer = 0;
-    if( viewID == VIEW_VIEWPORT || this == screen ) {
-      zTRnd_AlphaBlendFunc oldBlendFunc = zrenderer->GetAlphaBlendFunc();
-      if( alphafunc != zRND_ALPHA_FUNC_BLEND && alphafunc != zRND_ALPHA_FUNC_ADD )
-        zrenderer->SetAlphaBlendFunc( zRND_ALPHA_FUNC_BLEND );
-      else
-        zrenderer->SetAlphaBlendFunc( alphafunc );
+      if (view && view->font) {
+          DWORD* stack = (DWORD*)reg.esp;
+          int x = static_cast<int>(stack[1]);
+          int y = static_cast<int>(stack[2]);
+          zSTRING* text = reinterpret_cast<zSTRING*>(stack[3]);
 
-      PrintChars_Union( nax( x ), nay( y ), line );
-      zrenderer->SetAlphaBlendFunc( oldBlendFunc );
-    }
-    else
-      CreateText( x, y, line );
+          view->scrollTimer = 0;
+          if (view->viewID == VIEW_VIEWPORT || view == screen) {
+              zTRnd_AlphaBlendFunc oldBlendFunc = zrenderer->GetAlphaBlendFunc();
+              if (view->alphafunc != zRND_ALPHA_FUNC_BLEND && view->alphafunc != zRND_ALPHA_FUNC_ADD)
+                  zrenderer->SetAlphaBlendFunc(zRND_ALPHA_FUNC_BLEND);
+              else
+                  zrenderer->SetAlphaBlendFunc(view->alphafunc);
+
+              view->PrintChars_Union(view->nax(x), view->nay(y), text);
+              zrenderer->SetAlphaBlendFunc(oldBlendFunc);
+          }
+          else {
+              view->CreateText(x, y, text);
+          }
+      }
+
+      DWORD returnAddress = *(DWORD*)reg.esp;
+      reg.esp += 16;
+      reg.eip = returnAddress;
+  }
+ 
+  typedef int(__cdecl* union_adapter_create_hook_no_handle)(void* hook_func, void* target_addr, void* user_data, int hook_type);
+
+  void initHook() {
+      adapterHandleDLL = LoadLibrary("zUnionAdapter.dll");
+      if (adapterHandleDLL != NULL) {
+          union_adapter_create_hook_no_handle hookPrint = (union_adapter_create_hook_no_handle)GetProcAddress(adapterHandleDLL, "union_adapter_create_hook");
+          if (hookPrint) {
+              auto partial_create_status = hookPrint(partialHookzViewPrint, reinterpret_cast<void*>(0x007a9a40), partialHookzViewPrint, 2);           
+          }
+      }
   }
 
 

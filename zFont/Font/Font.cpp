@@ -5,6 +5,8 @@ namespace GOTHIC_ENGINE {
   static Array<FontGeneric*> FontsGeneric;
   static Map<string, Font*> Fonts;
 
+  static Map<string, string> FontsColors;
+  static Map<string, double> FontsCustomMultiplier;
 
   Glyph* FontGeneric::GetGlyph( char32_t id ) {
     auto& pair = Glyphs[id];
@@ -30,7 +32,7 @@ namespace GOTHIC_ENGINE {
     Glyph* glyph = new Glyph();
     glyph->Id = id;
     glyph->OffsetX = mtx.leftSideBearing;
-    glyph->OffsetY = mtx.yOffset;
+    glyph->OffsetY = -mtx.yOffset;
     glyph->PenWidth = mtx.advanceWidth;
     glyph->Image = img;
     Glyphs.Insert( id, glyph );
@@ -82,6 +84,24 @@ namespace GOTHIC_ENGINE {
     return length;
   }
 
+
+  double ComputeCapHeight(SFT* sft, double fontSize) {
+      SFT_Glyph gl;
+      SFT_GMetrics mtx;
+      char32_t testChars[] = { 'H', 'I', 'E', 'F', 'L', 'T', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9' };
+      for (int i = 0; i < sizeof(testChars) / sizeof(testChars[0]); i++) {
+          if (sft_lookup(sft, testChars[i], &gl) >= 0 &&
+              sft_gmetrics(sft, gl, &mtx) >= 0) {
+              double height = -mtx.yOffset;
+              if (height > 0 && height <= fontSize * 1.5) {
+                  return height;
+              }
+          }
+      }
+      SFT_LMetrics lmtx;
+      sft_lmetrics(sft, &lmtx);
+      return lmtx.ascender * 0.7;
+  }
 
   FontGeneric* FontGeneric::GetFont( const string& name, double size, FontUnits units ) {
     bool gothicPoints = units == FontUnits::Gp;
@@ -135,7 +155,7 @@ namespace GOTHIC_ENGINE {
     sft_lmetrics( sft, &lmtx );
     font->Ascender = lmtx.ascender;
     font->Descender = lmtx.descender;
-    font->CapHeight = font->SizePx - lmtx.ascender;
+    font->CapHeight = ComputeCapHeight(sft, font->SizePx);
 
     FontsGeneric.Insert( font );
     return font;
@@ -292,10 +312,20 @@ namespace GOTHIC_ENGINE {
         return Null;
     }
 
+    cmd << "load font: " + name << endl;
+
     Font* font = new Font();
     font->Name = nameNoExt;
     font->FontProto = fontGeneric;
     font->Color = color;
+    auto& pairColors = FontsColors[name];
+    if (!pairColors.IsNull()) {
+        Array<CStringA> params = pairColors.GetValue().Split(",");
+        font->Color = zCOLOR(params.GetSafe(1)->ToInt32(), params.GetSafe(2)->ToInt32(), params.GetSafe(3)->ToInt32());
+    }
+    else {
+        font->Color = color;
+    }
     Fonts.Insert( nameUpper, font );
     return font;
   }
