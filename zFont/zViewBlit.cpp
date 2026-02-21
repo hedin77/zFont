@@ -75,6 +75,7 @@ namespace GOTHIC_ENGINE {
       if (adapterHandleDLL != NULL) {
           union_adapter_create_hook_no_handle hookPrint = (union_adapter_create_hook_no_handle)GetProcAddress(adapterHandleDLL, "union_adapter_create_hook");
           if (hookPrint) {
+              //0x006FFEB0, 0x0073A4B0, 0x00749F40, 0x007a9a40
               auto partial_create_status = hookPrint(partialHookzViewPrint, reinterpret_cast<void*>(0x007a9a40), partialHookzViewPrint, 2);           
           }
       }
