@@ -9,8 +9,6 @@ namespace GOTHIC_ENGINE {
     string ddrawFileName = buffer;
     CustomDirectDraw = ddrawFileName.StartWith( Union.GetGameDirectory() );
 
-    initHook();
-    
     string temp;
     Union.GetSysPackOption().Read( FontScale, "Font", "Scale", FontScale );
     Union.GetSysPackOption().Read( DrawShadow, "Font", "DrawShadow", DrawShadow );
@@ -61,6 +59,11 @@ namespace GOTHIC_ENGINE {
   }
 
   void Game_Init() {
+    bool needPartialHook = true;
+    Union.GetSysPackOption().Read(needPartialHook, "Font", "NeedPartialHook", needPartialHook);
+    if (needPartialHook) {
+        initHook();
+    }
     // DefineCurrentLanguage();
     GameEncoding = GuessGameEncoding();
     cmd << "Choosen CP: " << GameEncoding << endl;
